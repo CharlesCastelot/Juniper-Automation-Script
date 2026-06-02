@@ -1,0 +1,127 @@
+from jnpr.junos import Device
+from jnpr.junos.utils.config import Config
+from pathlib import Path
+import json
+
+
+def main():
+    isValid = False
+    print("Welcome to the Juniper - Block a MAC address from all ports but one Script!")
+    data = file_check()
+    with Device(host=data["host"], user=data["user"], password=data["password"], timeout=60).open() as dev:
+        print("Connected to device: " + data["host"])
+        while not isValid:
+            mac_address = input("Enter the MAC address to block (e.g., 00:11:22:33:44:55): ")
+            isValid = checkMac(mac_address)
+        blockName = input("Enter a name for the block (e.g., BLOCK-1): ")
+        cu = Config(dev)
+        firewall_rules = f"""
+        set firewall family ethernet-switching filter {blockName} term {blockName}-BLOCK from source-mac-address {mac_address}
+        set firewall family ethernet-switching filter {blockName} term {blockName}-BLOCK then discard
+        set firewall family ethernet-switching filter {blockName} term {blockName}-ALL then accept
+        set groups {blockName} interfaces <ge-*> unit 0 family ethernet-switching filter input {blockName}
+        set apply-groups {blockName}
+        """
+
+        print("Loading changes...")
+        cu.load(firewall_rules, format="set")
+        print(f"created object {blockName}")
+        print(f"created object {blockName}-BLOCK")
+        print(f"created object {blockName}-ALL")
+
+        cu.pdiff()
+        confirm = input("Apply? (yes/no): ").strip().lower()
+        if confirm == "yes":
+            cu.commit()
+            print(f"MAC {mac_address} blocked on all ports.")
+        else:
+            cu.rollback()
+            print("Cancelled.")
+
+
+def checkMac(mac):
+    values = mac.split(":")
+    if len(values) != 6:
+        print("Invalid MAC address format. Please enter in format XX:XX:XX:XX:XX:XX.")
+        return False
+    for val in values:
+        if len(val) != 2:
+            print("Invalid MAC address format. Each octet should be two hexadecimal digits.")
+            return False
+        try:
+            int(val, 16)
+        except ValueError:
+            print("Invalid MAC address format. Each octet should be a valid hexadecimal number.")
+            return False
+    return True
+
+
+def file_check():
+    file_path = Path("./loginInfo.json")
+
+    if not file_path.exists():
+        data = user_input()
+        with open("loginInfo.json", "w") as f:
+            json.dump([data], f)
+        return data
+
+    with open("loginInfo.json", "r") as f:
+        sessions = json.load(f)
+
+    if isinstance(sessions, dict):
+        sessions = [sessions]
+    for i in range(len(sessions)):
+        if "default" in sessions[i]:
+            default_idx = i
+            break
+    default = sessions[default_idx]
+    others = [(i, s) for i, s in enumerate(sessions) if i != default_idx]
+
+    print(f"Default: {default['host']}")
+    if len(others) > 0:
+        print("Other sessions:")
+        for num in range(len(others)):
+            print(f"  [{num + 1}] {others[num][1]['host']}")
+    print("  [N] New session")
+    choice = input("Select (Enter=default, number=session, N=new): ").strip()
+
+    if choice == "":
+        return default
+
+    if choice.upper() == "N":
+        data = user_input()
+        for s in sessions:
+            s["default"] = False
+        sessions.append(data)
+        with open("loginInfo.json", "w") as f:
+            json.dump(sessions, f)
+        return data
+
+    try:
+        num = int(choice)
+        if 1 <= num <= len(others):
+            orig_idx, selected = others[num - 1]
+            for s in sessions:
+                s["default"] = False
+            sessions[orig_idx]["default"] = True
+            with open("loginInfo.json", "w") as f:
+                json.dump(sessions, f)
+            return selected
+    except ValueError:
+        pass
+
+    print("Invalid choice, using default.")
+    return default
+
+
+def user_input():
+    data = {}
+    data["host"] = input("Device IP address: ")
+    data["user"] = input("Device username: ")
+    data["password"] = input("Device password: ")
+    data["default"] = True
+    return data
+
+
+if __name__ == "__main__":
+    main()
