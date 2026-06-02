@@ -12,25 +12,30 @@ def main():
         print(f"File '{backup_file}' not found.")
         return
     data = file_check()
-    with Device(host=data["host"], user=data["user"], password=data["password"], timeout=60).open() as dev:
-        print("Connected to device: " + data["host"])
-        with Config(dev, mode="exclusive") as cu:
-            print("Loading backup configuration...")
-            cu.load(path=backup_file, format="xml", overwrite=True)
-            print("\n--- Configuration diff ---")
-            diff = cu.diff()
-            if diff is None:
-                print("No differences found. Device already has this configuration.")
-                cu.rollback()
-            else:
-                print(diff)
-                confirm = input("\nApply this configuration? (yes/no): ").strip().lower()
-                if confirm == "yes" or confirm == "y":
-                    cu.commit(timeout=120)
-                    print("Configuration applied successfully.")
-                else:
+
+    try:
+        with Device(host=data["host"], user=data["user"], password=data["password"], timeout=60).open() as dev:
+            print("Connected to device: " + data["host"])
+            with Config(dev, mode="exclusive") as cu:
+                print("Loading backup configuration...")
+                cu.load(path=backup_file, format="xml", overwrite=True)
+                print("\n--- Configuration diff ---")
+                diff = cu.diff()
+                if diff is None:
+                    print("No differences found. Device already has this configuration.")
                     cu.rollback()
-                    print("Cancelled. No changes made.")
+                else:
+                    print(diff)
+                    confirm = input("\nApply this configuration? (yes/no): ").strip().lower()
+                    if confirm == "yes" or confirm == "y":
+                        cu.commit(timeout=120)
+                        print("Configuration applied successfully.")
+                    else:
+                        cu.rollback()
+                        print("Cancelled. No changes made.")
+    except Exception as e:
+        print(f"Failed to connect to {data['host']}: {e}")
+        return
 
     
         

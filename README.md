@@ -10,6 +10,8 @@ I currently have 5 automation scripts:
 4. BlockMAC_AllBut1Port.py
 5. setupVLANphone.py
 
+## Requirements
+pip install junos-eznc lxml
 
 ## Backup.py
 This script creates and saves a backupfile named <host-IP>_backup.xml.

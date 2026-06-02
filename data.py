@@ -105,6 +105,46 @@ def checkPort(port):
 
     return True
 
+def checkPortAllbut1(port):
+    result = list(port)
+    expected_start = "ge-0/0/"
+    expected_chars = list(expected_start)
+    for i in range(len(expected_chars)):
+        if i >= len(result) or result[i] != expected_chars[i]:
+            print(f"Invalid port format. Port should start with '{expected_start}'.")
+            return False
+    
+    if len(result) == 7:
+        print("Invalid port format. No port number provided.")
+        return False
+
+    if len(result) == 8:
+        if result[7] == '*':
+            print("Cannot exempt a wildcard port.")
+            return False
+        if not result[7].isdigit():
+            print("Invalid port format. Port number should only contain digits.")
+            return False
+        port_num = int(result[7])
+        if port_num < 0 or port_num > 47:
+            print("Invalid port number. Port should be between 0 and 47.")
+            return False
+
+    if len(result) == 9:
+        if not result[7].isdigit() or not result[8].isdigit():
+            print("Invalid port format. Port number should only contain digits.")
+            return False
+        port_num = int(result[7] + result[8])
+        if port_num < 0 or port_num > 47:
+            print("Invalid port number. Port should be between 0 and 47.")
+            return False
+
+    if len(result) > 9:
+        print("Invalid port number. Port should be between 0 and 47.")
+        return False
+
+    return True
+
 def checkMac(mac):
     values = mac.split(":")
     if len(values) != 6:
