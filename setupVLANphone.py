@@ -6,7 +6,7 @@ import json
 
 def main():
     isPortValid = False
-    print("Welcome to the Juniper - Block a MAC address from all ports but one Script!")
+    print("Welcome to the Juniper - Voice VLAN Phone Setup Script!")
     data = file_check()
     with Device(host=data["host"], user=data["user"], password=data["password"], timeout=60).open() as dev:
         print("Connected to device: " + data["host"])
