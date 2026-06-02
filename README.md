@@ -1,5 +1,7 @@
 # Juniper Automation Scripts
 
+PLEASE NOT THAT THE SCRIPTS WILL STORE YOUR PASSWORD ON THE FOLDER IN PLAINTEXT RIGHT NOW. MAKE SURE TO PROTECT YOUR longinInfo.json ACCORDINGLY!
+
 I currently have 5 automation scripts:
 
 1. Backup.py
