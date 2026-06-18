@@ -6,13 +6,15 @@ PLEASE NOTE THAT THE SCRIPTS WILL STORE YOUR PASSWORD ON THE FOLDER IN PLAINTEXT
 pip install junos-eznc lxml
 
 
-I currently have 5 automation scripts:
+I currently have 7 automation scripts:
 
 1. Backup.py
 2. applyBackup.py
 3. BlockMAC.py
 4. BlockMAC_AllBut1Port.py
-5. setupVLANphone.py
+5. createVLANphone.py 
+6. setupVLANphone.py
+7. prepareRADIUS.py
 
 
 ## Backup.py
