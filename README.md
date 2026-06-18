@@ -43,4 +43,4 @@ Note that it assumes you already have a VOICE and DATA vlan.
 ## prepareRADIUS.py
 I wrote this script after making my RADIUS configurations so it's easier to remember the configuration. 
 Run this and you will also have basic configs for a home RADIUS!
-The configs are meant for a PEAP server with mschapv2, there is 3 retries, it uses mac-radius, and the supplicant is single (you can change to multiple or Single-Secure for security).
+The configs are meant for a PEAP server with mschapv2, there is 3 retries, it uses mac-radius, and the supplicant is single (you can change to multiple or single-secure for security).
